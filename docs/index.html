@@ -9,11 +9,22 @@
             font-family: sans-serif;
         }
 
+        .checkboxDiv {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        canvas {
+            display: inline-block;
+            vertical-align: top;
+        }
+
         .table {
             display: inline-block;
             margin: 20px;
             border: none;
             border-collapse: collapse;
+            vertical-align: top;
         }
 
         .table th {
@@ -36,6 +47,17 @@
         .table caption {
             font-weight: bold;
             margin-bottom: 5px;
+        }
+
+        .image {
+            display: block;
+        }
+
+        .plot {
+            display: inline-block;
+            /* border: 1px solid black; */
+            vertical-align: top;
+
         }
 
         #dropzone {
@@ -94,193 +116,390 @@
         }
     </style>
     <script>
-        const AtomicWeights = { "H": 1.00794, "He": 4.002602, "Li": 6.941, "Be": 9.012182, "B": 10.811, "C": 12.0107, "N": 14.00674, "O": 15.9994, "F": 18.9984032, "Ne": 20.1797, "Na": 22.98977, "Mg": 24.305, "Al": 26.981538, "Si": 28.0855, "P": 30.973762, "S": 32.066, "Cl": 35.4527, "Ar": 39.948, "K": 39.0983, "Ca": 40.078, "Sc": 44.95591, "Ti": 47.867, "V": 50.9415, "Cr": 51.9961, "Mn": 54.938049, "Fe": 55.845, "Co": 58.9332, "Ni": 58.6934, "Cu": 63.546, "Zn": 65.39, "Ga": 69.723, "Ge": 72.61, "As": 74.9216, "Se": 78.96, "Br": 79.904, "Kr": 83.8, "Rb": 85.4678, "Sr": 87.62, "Y": 88.90585, "Zr": 91.224, "Nb": 92.90638, "Mo": 95.94, "Tc": 98, "Ru": 101.07, "Rh": 102.9055, "Pd": 106.42, "Ag": 107.8682, "Cd": 112.411, "In": 114.818, "Sn": 118.71, "Sb": 121.76, "Te": 127.6, "I": 126.90447, "Xe": 131.29, "Cs": 132.90545, "Ba": 137.327, "La": 138.9055, "Ce": 140.116, "Pr": 140.90765, "Nd": 144.24, "Pm": 145, "Sm": 150.36, "Eu": 151.964, "Gd": 157.25, "Tb": 158.92534, "Dy": 162.5, "Ho": 164.93032, "Er": 167.26, "Tm": 168.93421, "Yb": 173.04, "Lu": 174.967, "Hf": 178.49, "Ta": 180.9479, "W": 183.84, "Re": 186.207, "Os": 190.23, "Ir": 192.217, "Pt": 195.078, "Au": 196.96655, "Hg": 200.59, "Tl": 204.3833, "Pb": 207.2, "Bi": 208.98038, "Po": 209, "At": 210, "Rn": 222, "Fr": 223, "Ra": 226.0254, "Ac": 227.0278, "Th": 232.0381, "Pa": 231.03588, "U": 238.0289, "Np": 237.0482, "Pu": 244, "Am": 243, "Cm": 247, "Bk": 247, "Cf": 251, "Es": 252, "Fm": 257, "Md": 258, "No": 259, "Lr": 260, "Unq": 261, "Unp": 262, "Unh": 263, "D": 2.014101778, "T": 3.01604928 };
+        const ATOMIC_WEIGHTS = new Map([
+            ["H", 1.00794], ["He", 4.002602], ["Li", 6.941], ["Be", 9.012182], ["B", 10.811], ["C", 12.0107], ["N", 14.00674], ["O", 15.9994], ["F", 18.9984032], ["Ne", 20.1797], ["Na", 22.98977], ["Mg", 24.305],
+            ["Al", 26.981538], ["Si", 28.0855], ["P", 30.973762], ["S", 32.066], ["Cl", 35.4527], ["Ar", 39.948], ["K", 39.0983], ["Ca", 40.078], ["Sc", 44.95591], ["Ti", 47.867], ["V", 50.9415], ["Cr", 51.9961],
+            ["Mn", 54.938049], ["Fe", 55.845], ["Co", 58.9332], ["Ni", 58.6934], ["Cu", 63.546], ["Zn", 65.39], ["Ga", 69.723], ["Ge", 72.61], ["As", 74.9216], ["Se", 78.96], ["Br", 79.904], ["Kr", 83.8],
+            ["Rb", 85.4678], ["Sr", 87.62], ["Y", 88.90585], ["Zr", 91.224], ["Nb", 92.90638], ["Mo", 95.94], ["Tc", 98], ["Ru", 101.07], ["Rh", 102.9055], ["Pd", 106.42], ["Ag", 107.8682], ["Cd", 112.411],
+            ["In", 114.818], ["Sn", 118.71], ["Sb", 121.76], ["Te", 127.6], ["I", 126.90447], ["Xe", 131.29], ["Cs", 132.90545], ["Ba", 137.327], ["La", 138.9055], ["Ce", 140.116], ["Pr", 140.90765], ["Nd", 144.24],
+            ["Pm", 145], ["Sm", 150.36], ["Eu", 151.964], ["Gd", 157.25], ["Tb", 158.92534], ["Dy", 162.5], ["Ho", 164.93032], ["Er", 167.26], ["Tm", 168.93421], ["Yb", 173.04], ["Lu", 174.967], ["Hf", 178.49],
+            ["Ta", 180.9479], ["W", 183.84], ["Re", 186.207], ["Os", 190.23], ["Ir", 192.217], ["Pt", 195.078], ["Au", 196.96655], ["Hg", 200.59], ["Tl", 204.3833], ["Pb", 207.2], ["Bi", 208.98038], ["Po", 209],
+            ["At", 210], ["Rn", 222], ["Fr", 223], ["Ra", 226.0254], ["Ac", 227.0278], ["Th", 232.0381], ["Pa", 231.03588], ["U", 238.0289], ["Np", 237.0482], ["Pu", 244], ["Am", 243], ["Cm", 247],
+            ["Bk", 247], ["Cf", 251], ["Es", 252], ["Fm", 257], ["Md", 258], ["No", 259], ["Lr", 260], ["Unq", 261], ["Unp", 262], ["Unh", 263], ["D", 2.014101778], ["T", 3.01604928]
+        ]);
 
-        function GetElements(htmlDocument) {
-            var table = htmlDocument.getElementsByTagName("table");
-            if (table.length != 1)
-                return;
-            var rows = table[0].getElementsByTagName("tr");
-            var header = rows[0].getElementsByTagName("td");
-            if (header[0].innerText !== "Spectrum")
-                return;
-            var elementsList = [];
-            for (var i = 2; i < header.length; ++i) {
-                var elementName = header[i].innerText;
-                if (elementName === "Total" || elementName === "")
-                    continue;
-                elementsList.push(elementName);
+        class SiteOfInterestData {
+            constructor(elementsNamesList, atomicDataMatrix, weightDataMatrix, imageFilesList) {
+                this.elementsNames = elementsNamesList;
+                this.atomic = atomicDataMatrix;
+                this.weight = weightDataMatrix;
+                this.images = imageFilesList;
             }
-            return elementsList;
         }
 
-        function GetAtomicWeights(elementsNames) {
-            return elementsNames.map(elementName => AtomicWeights[elementName]);
-        }
+        class SitesOfInterest {
+            constructor(htmlFiles, imageFiles) {
+                this.htmlFiles = htmlFiles;
+                this.imageFiles = imageFiles;
+            }
 
-        function GetAmounts(elementsCount, htmlDocument) {
-            var table = htmlDocument.getElementsByTagName("table");
-            if (table.length != 1)
-                return;
-            var rows = table[0].getElementsByTagName("tr");
-            var amounts = new Array();
-            var index = 0;
-            for (var i = 1; i < rows.length; ++i) {
-                var cells = rows[i].getElementsByTagName("td");
-                if (!cells[1].innerText.includes("Yes"))
-                    continue;
-                amounts[index] = new Array();
-                for (var j = 2; j < elementsCount + 2; ++j) {
-                    var value = parseFloat(cells[j].innerText);
-                    if (isNaN(value)) value = 0;
-                    amounts[index].push(value);
+            filesProcessing() {
+                this.htmlFiles.forEach(file => {
+                    const reader = new FileReader();
+                    const parser = new DOMParser();
+                    reader.addEventListener("load", (event) => {
+                        const siteOfInterestHtmlString = event.target.result;
+                        // Интерпретируем содержимое файла как HTML
+                        const siteOfInterestHtml = parser.parseFromString(siteOfInterestHtmlString, "text/html");
+                        // Теперь у вас есть доступ к документу HTML и можете выполнять различные операции над ним
+                        const siteOfInterestData = this.htmlDocumentProcessing(siteOfInterestHtml.documentElement);
+                        const tabContent = this.makeDivTable(siteOfInterestData);
+                        addTab(file.name, tabContent);
+                    }
+                    );
+                    if (file) {
+                        reader.readAsText(file);
+                    }
+                });
+            }
+
+            htmlDocumentProcessing(htmlDocument) {
+                let elements = this.getElementsNames(htmlDocument);
+                let elementsWeight = elements.map(element => ATOMIC_WEIGHTS.get(element)).filter(v => v !== undefined);
+                let amounts = this.getAmounts(elements.length, htmlDocument);
+                let unit = this.getUnits(htmlDocument);
+                let atomicValues = this.convertToAtomic(elementsWeight, amounts, unit);
+                let weightValues = this.convertToWeight(elementsWeight, amounts, unit);
+                let imagesFileNames = this.getImageFileNames(htmlDocument);
+                let availableImageFiles = this.imageFiles.filter(img => imagesFileNames.includes(img.name.toLowerCase()));
+                return new SiteOfInterestData(elements, atomicValues, weightValues, availableImageFiles);
+            }
+
+            getElementsNames(htmlDocument) {
+                let table = htmlDocument.getElementsByTagName("table");
+                if (table.length != 1)
+                    return [];
+                let rows = table[0].getElementsByTagName("tr");
+                let header = rows[0].getElementsByTagName("td");
+                if (header[0].innerText !== "Spectrum")
+                    return [];
+                let elementsList = [];
+                for (let i = 2; i < header.length; ++i) {
+                    let elementName = header[i].innerText;
+                    if (elementName === "Total" || elementName === "")
+                        continue;
+                    elementsList.push(elementName);
                 }
-                index++;
+                return elementsList;
             }
-            return amounts;
-        }
 
-        function GetUnits(htmlDocument) {
-            for (p of htmlDocument.getElementsByTagName("p")) {
-                var line = p.innerText;
-                if (!line.includes("All results in"))
-                    continue;
-                if (line.includes("weight")) return "weight";
-                if (line.includes("atomic")) return "atomic";
-                return "other";
-            }
-        }
-
-        function FileProcessing(file) {
-            var reader = new FileReader();
-            var parser = new DOMParser();
-            reader.addEventListener(
-                "load",
-                () => {
-                    var documentString = event.target.result;
-                    // Интерпретируем содержимое файла как HTML
-                    var doc = parser.parseFromString(documentString, "text/html");
-                    // Теперь у вас есть доступ к документу HTML и можете выполнять различные операции над ним
-                    var htmlDocument = doc.documentElement;
-                    var tables = DocumentProcessing(htmlDocument);
-                    var newPage = MakeDivTable(tables);
-                    AddTab(file.name, newPage);
+            getAmounts(elementsCount, htmlDocument) {
+                let table = htmlDocument.getElementsByTagName("table");
+                if (table.length != 1)
+                    return [];
+                let rows = table[0].getElementsByTagName("tr");
+                let amounts = [];
+                let index = 0;
+                for (let i = 1; i < rows.length; ++i) {
+                    let cells = rows[i].getElementsByTagName("td");
+                    if (!cells[1].innerText.includes("Yes"))
+                        continue;
+                    amounts[index] = [];
+                    for (let j = 2; j < elementsCount + 2; ++j) {
+                        let value = parseFloat(cells[j].innerText);
+                        if (isNaN(value)) value = 0;
+                        amounts[index].push(value);
+                    }
+                    index++;
                 }
-            );
-
-            if (file) {
-                reader.readAsText(file);
+                return amounts;
             }
-        }
 
-        function MakeDivTable(tables) {
-            var divTables = document.createElement("div");
+            getUnits(htmlDocument) {
+                for (let pTag of htmlDocument.getElementsByTagName("p")) {
+                    let line = pTag.innerText;
+                    if (!line.includes("All results in"))
+                        continue;
+                    if (line.includes("weight")) return "weight";
+                    if (line.includes("atomic")) return "atomic";
+                    return "other";
+                }
+            }
 
-            var atomicTable = CreateTableFromMatrix(tables.elementsNames, tables.atomic);
-            atomicTable.getElementsByTagName('caption')[0].textContent = "Results in atomic %";
-            atomicTable.className = 'table';
-            divTables.appendChild(atomicTable);
+            getImageFileNames(htmlDocument) {
+                return Array.from(htmlDocument.getElementsByTagName('img')).map(img => img.getAttribute('src').split('/').pop().toLowerCase());
+            }
 
-            var weightTable = CreateTableFromMatrix(tables.elementsNames, tables.weight);
-            weightTable.getElementsByTagName('caption')[0].textContent = "Results in weight %";
-            weightTable.className = 'table';
-            divTables.appendChild(weightTable);
+            convertToAtomic(elementsWeight, amounts, unit) {
+                if (unit === "atomic")
+                    return amounts;
+                else
+                    return this.convertPercents(elementsWeight, amounts, (a, b) => a / b);
+            }
 
-            return divTables;
-        }
+            convertToWeight(elementsWeight, amounts, unit) {
+                if (unit === "weight")
+                    return amounts;
+                else
+                    return this.convertPercents(elementsWeight, amounts, (a, b) => a * b);
+            }
 
-        function CreateTableFromMatrix(header, matrix) {
-            var table = document.createElement('table');
-            var caption = document.createElement('caption');
-            table.appendChild(caption);
-            var rowHeader = document.createElement('tr');
-            var cell = document.createElement('th');
-            cell.textContent = "Spectrum";
-            rowHeader.appendChild(cell);
-            for (var i = 0; i < header.length; ++i) {
-                var cell = document.createElement('th');
-                cell.textContent = header[i];
+            convertPercents(elementsWeight, amounts, op) {
+                const absolutValues = [];
+                for (let i = 0; i < amounts.length; ++i) {
+                    let spectrum = [];
+                    for (let j = 0; j < amounts[i].length; ++j) {
+                        spectrum.push(op(amounts[i][j], elementsWeight[j]));
+                    }
+                    absolutValues.push(spectrum);
+                }
+                const sums = absolutValues.map(spectrum => spectrum.reduce((sum, val) => sum + val, 0));
+                const percentValues = [];
+                for (let i = 0; i < absolutValues.length; ++i) {
+                    let line = [];
+                    for (let j = 0; j < absolutValues[i].length; ++j) {
+                        line.push(100 * absolutValues[i][j] / sums[i]);
+                    }
+                    percentValues.push(line);
+                }
+                return percentValues;
+            }
+
+            makeDivTable(siteOfInterestData) {
+                let divTables = document.createElement("div");
+
+                let atomicTable = this.makeTableFromMatrix(siteOfInterestData.elementsNames, siteOfInterestData.atomic);
+                atomicTable.getElementsByTagName('caption')[0].textContent = "Results in atomic %";
+                atomicTable.className = 'table';
+                divTables.appendChild(atomicTable);
+
+                let weightTable = this.makeTableFromMatrix(siteOfInterestData.elementsNames, siteOfInterestData.weight);
+                weightTable.getElementsByTagName('caption')[0].textContent = "Results in weight %";
+                weightTable.className = 'table';
+                divTables.appendChild(weightTable);
+
+                divTables.appendChild(this.makePlot(siteOfInterestData));
+
+                siteOfInterestData.images.forEach((image) => {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = URL.createObjectURL(image);
+                    imgElement.className = 'image';
+                    divTables.appendChild(imgElement);
+                });
+
+                return divTables;
+            }
+
+            makeTableFromMatrix(header, matrix) {
+                let table = document.createElement('table');
+                let caption = document.createElement('caption');
+                table.appendChild(caption);
+                let rowHeader = document.createElement('tr');
+                let cell = document.createElement('th');
+                cell.textContent = "Spectrum";
                 rowHeader.appendChild(cell);
-            }
-            table.appendChild(rowHeader);
+                for (let i = 0; i < header.length; ++i) {
+                    let cell = document.createElement('th');
+                    cell.textContent = header[i];
+                    rowHeader.appendChild(cell);
+                }
+                table.appendChild(rowHeader);
 
-            for (var i = 0; i < matrix.length; i++) {
-                var row = document.createElement('tr');
-                var cell = document.createElement('td');
-                cell.textContent = i + 1;
-                row.appendChild(cell);
-                for (var j = 0; j < matrix[i].length; j++) {
-                    var cell = document.createElement('td');
-                    cell.textContent = parseFloat(matrix[i][j]).toFixed(2);
+                for (let i = 0; i < matrix.length; i++) {
+                    let row = document.createElement('tr');
+                    let cell = document.createElement('td');
+                    cell.textContent = i + 1;
                     row.appendChild(cell);
+                    for (let j = 0; j < matrix[i].length; j++) {
+                        let cell = document.createElement('td');
+                        cell.textContent = parseFloat(matrix[i][j]).toFixed(2);
+                        row.appendChild(cell);
+                    }
+                    table.appendChild(row);
                 }
-                table.appendChild(row);
+                return table;
             }
-            return table;
+
+            makePlot(siteOfInterestData) {
+                let plotDiv = document.createElement('div');
+                plotDiv.className = 'plot';
+                plotDiv.dataset.elementsList = JSON.stringify(siteOfInterestData.elementsNames);
+                plotDiv.dataset.atomicMatrix = JSON.stringify(siteOfInterestData.atomic);
+                this.addCheckboxes(plotDiv, siteOfInterestData.elementsNames);
+
+                let canvas = document.createElement('canvas');
+                canvas.width = 600;
+                canvas.height = 600;
+
+                plotDiv.appendChild(canvas);
+                return plotDiv;
+            }
+
+            addCheckboxes(plotDiv, elements) {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'checkboxDiv';
+                elements.forEach((labelText, index) => {
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = labelText;
+                    checkbox.addEventListener('change', checkboxHandler);
+
+                    const label = document.createElement('label');
+                    label.textContent = labelText;
+
+                    checkboxDiv.appendChild(checkbox);
+                    checkboxDiv.appendChild(label);
+                    checkboxDiv.appendChild(document.createElement('br'));
+                });
+                plotDiv.appendChild(checkboxDiv);
+            }
         }
 
-        function DocumentProcessing(htmlDocument) {
-            var elements = GetElements(htmlDocument);
-            var elementsWeight = GetAtomicWeights(elements);
-            var amounts = GetAmounts(elements.length, htmlDocument);
-            var unit = GetUnits(htmlDocument);
-
-            var atomicValues = ConvertToAtomic(elementsWeight, amounts, unit);
-            var weightValues = ConvertToWeight(elementsWeight, amounts, unit);
-
-            // console.log(atomicValues);
-            // console.log(weightValues);
-
-            return { elementsNames: elements, atomic: atomicValues, weight: weightValues };
+        function checkboxHandler(event) {
+            const checkbox = event.target;
+            const checkboxDiv = checkbox.parentNode;
+            const checkedElements = Array.from(checkboxDiv.getElementsByTagName('input')).filter(c => c.checked).map(c => c.value);
+            if (checkedElements.length < 2 || checkedElements.length > 3) {
+                return;
+            }
+            const plotDiv = checkboxDiv.parentNode;
+            const canvas = plotDiv.getElementsByTagName('canvas')[0];
+            const elementsList = JSON.parse(plotDiv.dataset.elementsList);
+            const atomicMatrix = JSON.parse(plotDiv.dataset.atomicMatrix);
+            const recalculatedMatrix = recalculateAtomicMatrix(elementsList, checkedElements, atomicMatrix);
+            if (checkedElements.length == 2) {
+                drawDiagram2(checkedElements, recalculatedMatrix, canvas);
+            } else if (checkedElements.length == 3) {
+                drawDiagram3(checkedElements, recalculatedMatrix, canvas);
+            }
+            // console.log(`Checkbox ${checkbox.value} is ${checkbox.checked ? "checked" : "unchecked"}`);
+            // console.log(elementsList);
+            // console.log(atomicMatrix);
+            // console.log(plotDiv);
+            // console.log(canvas);
+            // console.log(checkedElements);
         }
 
-        function ConvertToAtomic(elementsWeight, amounts, unit) {
-            if (unit === "atomic")
-                return amounts;
-            else
-                return Convert(elementsWeight, amounts, (a, b) => a / b);
+        function drawDiagram2(checkedElements, recalculatedMatrix, canvas) {
+            const ctx = canvas.getContext('2d');
+            const h = canvas.height;
+            const w = canvas.width;
+            const padding = 20;
+            const xshift = 7;
+            const pointLeft = { x: padding, y: h / 2 };
+            const pointRight = { x: w - padding, y: h / 2 };
+            const length = pointRight.x - pointLeft.x;
+            ctx.clearRect(0, 0, w, h);
+            // line
+            ctx.beginPath();
+            ctx.moveTo(pointLeft.x, pointLeft.y);
+            ctx.lineTo(pointRight.x, pointRight.y);
+            ctx.closePath();
+            ctx.stroke();
+            // name
+            ctx.fillStyle = "red";
+            ctx.beginPath(); ctx.ellipse(pointLeft.x, pointLeft.y, 3, 3, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(pointRight.x, pointRight.y, 3, 3, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.font = "20px Arial";
+            ctx.fillText(checkedElements[0], pointLeft.x - xshift, pointLeft.y - xshift);
+            ctx.fillText(checkedElements[1], pointRight.x - xshift, pointRight.y - xshift);
+            // points
+            const spectrumPoints = [];
+            for (let spectrum of recalculatedMatrix) {
+                spectrumPoints.push({ x: pointLeft.x + length * (1 - spectrum[0]), y: pointLeft.y });
+            }
+
+            ctx.fillStyle = "blue";
+            for (let i = 0; i < spectrumPoints.length; i++) {
+                ctx.beginPath();
+                ctx.ellipse(spectrumPoints[i].x, spectrumPoints[i].y, 3, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.font = "20px Arial";
+            for (let i = 0; i < spectrumPoints.length; i++) {
+                ctx.fillText(i + 1, spectrumPoints[i].x - xshift, spectrumPoints[i].y + 20);
+            }
         }
 
-        function ConvertToWeight(elementsWeight, amounts, unit) {
-            if (unit === "weight")
-                return amounts;
-            else
-                return Convert(elementsWeight, amounts, (a, b) => a * b);
+        function drawDiagram3(checkedElements, recalculatedMatrix, canvas) {
+            const ctx = canvas.getContext('2d');
+            const h = canvas.height;
+            const w = canvas.width;
+            const padding = 20;
+            const xshift = 7;
+            const yshift = 3;
+            const length = w - 2 * padding;
+            const heightOfTriangle = 0.5 * Math.sqrt(3) * length;
+            const pointLeft = { x: padding, y: heightOfTriangle + padding };
+            const pointRight = { x: w - padding, y: heightOfTriangle + padding };
+            const pointTop = { x: w / 2, y: padding };
+            ctx.clearRect(0, 0, w, h);
+            // line
+            ctx.beginPath();
+            ctx.moveTo(pointLeft.x, pointLeft.y);
+            ctx.lineTo(pointRight.x, pointRight.y);
+            ctx.lineTo(pointTop.x, pointTop.y);
+            ctx.closePath();
+            ctx.stroke();
+            // name
+            ctx.fillStyle = "red";
+            ctx.beginPath(); ctx.ellipse(pointLeft.x, pointLeft.y, 3, 3, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(pointRight.x, pointRight.y, 3, 3, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(pointTop.x, pointTop.y, 3, 3, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.font = "20px Arial";
+            ctx.fillText(checkedElements[0], pointLeft.x - 2 * xshift, pointLeft.y - yshift);
+            ctx.fillText(checkedElements[1], pointRight.x - 3, pointRight.y - yshift);
+            ctx.fillText(checkedElements[2], pointTop.x - xshift, pointTop.y - yshift);
+            // points
+            const spectrumPoints = [];
+            for (let spectrum of recalculatedMatrix) {
+                let abc = spectrum[0] + spectrum[1] + spectrum[2];
+                let x = 0.5 * (2 * spectrum[1] + spectrum[2]) / abc;
+                let y = Math.sqrt(3) * 0.5 * spectrum[2] / abc;
+                let Ax = pointLeft.x + x * length;
+                let Ay = pointLeft.y - y * length;
+                spectrumPoints.push({ x: Ax, y: Ay });
+            }
+
+            ctx.fillStyle = "blue";
+            for (let i = 0; i < spectrumPoints.length; i++) {
+                ctx.beginPath();
+                ctx.ellipse(spectrumPoints[i].x, spectrumPoints[i].y, 3, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.font = "20px Arial";
+            for (let i = 0; i < spectrumPoints.length; i++) {
+                ctx.fillText(i + 1, spectrumPoints[i].x - xshift, spectrumPoints[i].y + 20);
+            }
         }
 
-        function Convert(elementsWeight, amounts, op) {
-            var temp = [];
-            for (var i = 0; i < amounts.length; ++i) {
-                var line = [];
-                for (var j = 0; j < amounts[i].length; ++j) {
-                    line.push(op(amounts[i][j], elementsWeight[j]));
+        function recalculateAtomicMatrix(elementsList, checkedElements, atomicMatrix) {
+            const newMatrix = [];
+            for (let j = 0; j < atomicMatrix.length; j++) {
+                let spectrum = [];
+                for (let i = 0; i < atomicMatrix[j].length; i++) {
+                    if (checkedElements.includes(elementsList[i])) {
+                        spectrum.push(atomicMatrix[j][i]);
+                    }
                 }
-                temp.push(line);
+                newMatrix.push(spectrum);
             }
-            var sums = [];
-            for (var i = 0; i < temp.length; ++i) {
-                sums.push(sumArray(temp[i]));
-            }
-            var res = [];
-            for (var i = 0; i < temp.length; ++i) {
-                var line = [];
-                for (var j = 0; j < temp[i].length; ++j) {
-                    line.push(100 * temp[i][j] / sums[i]);
+
+            const sums = newMatrix.map(spectrum => spectrum.reduce((sum, val) => sum + val, 0));
+
+            for (let j = 0; j < newMatrix.length; j++) {
+                for (let i = 0; i < newMatrix[j].length; i++) {
+                    if (sums[j] == 0) {
+                        newMatrix[j][i] = 0;
+                    } else {
+                        newMatrix[j][i] = newMatrix[j][i] / sums[j];
+                    }
                 }
-                res.push(line);
             }
-            return res;
+            return newMatrix;
         }
 
-        function sumArray(array) {
-            var sum = 0;
-            for (let i = 0; i < array.length; i++) {
-                sum += array[i];
-            }
-            return sum;
-        }
-
-        function Initial() {
+        function initial() {
             const dropzone = document.getElementById('dropzone');
             const fileInput = document.getElementById('fileInput');
 
@@ -292,27 +511,29 @@
         }
 
         function handleFiles(files) {
-            for (var file of files) {
-                if (file.type == "text/html") {
-                    FileProcessing(file);
-                    // console.log('File name:', file.name);
-                    // console.log('File type:', file.type);
-                    // console.log('File size:', file.size, 'bytes');
+            const htmlFiles = [];
+            const imageFiles = [];
+            for (let file of files) {
+                if (file.type.includes('text/html')) {
+                    htmlFiles.push(file);
+                } else if (file.type.includes('image/')) {
+                    imageFiles.push(file);
                 }
             }
+            const sitesOfInterest = new SitesOfInterest(htmlFiles, imageFiles);
+            sitesOfInterest.filesProcessing();
         }
 
-        function AddTab(tabName, newTable) {
-            var numTabs = document.getElementsByClassName('tab').length;
-            var newTab = document.createElement('li');
+        function addTab(tabName, tabContent) {
+            let numTabs = document.getElementsByClassName('tab').length;
+            let newTab = document.createElement('li');
             newTab.className = 'tab';
             newTab.textContent = tabName;
-            // newTab.addEventListener("click", e => console.log(numTabs));
             newTab.addEventListener('click', e => changeTab(numTabs));
             document.getElementById('tab-list').appendChild(newTab);
 
-            newTable.className = 'tab-content';
-            document.getElementById('tab-content-list').appendChild(newTable);
+            tabContent.className = 'tab-content';
+            document.getElementById('tab-content-list').appendChild(tabContent);
 
             changeTab(numTabs);
         }
@@ -332,10 +553,10 @@
     </script>
 </head>
 
-<body onload="Initial();">
+<body onload="initial();">
     <div id="dropzone">
         Перетащите файлы сюда или щёлкните для выбора ...
-        <input type="file" accept=".htm,.html" id="fileInput" multiple style="display: none;">
+        <input type="file" accept=".htm,.html,.jpg,.jpeg,.bmp,.png" id="fileInput" multiple style="display: none;">
     </div>
     <div id="tabs">
         <ul id="tab-list">
